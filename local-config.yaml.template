@@ -1,0 +1,40 @@
+# ==============================================================
+# local-config.yaml — Configuração local da máquina
+# ==============================================================
+# Este é o TEMPLATE. Copie e configure:
+#   cp local-config.yaml.template local-config.yaml
+#
+# NUNCA commite local-config.yaml (já está no .gitignore).
+# Cada desenvolvedor mantém sua própria cópia local.
+# ==============================================================
+
+# --- Sync Externo (Session Handoff) ---
+# Habilita a sincronização do PROJECT_STATUS.md com uma ferramenta externa
+# As credenciais são lidas do .env (nunca colocadas aqui diretamente)
+
+external_sync:
+  enabled: false   # Mude para true para habilitar
+
+  # Provider: notion | trello | google_drive | airtable | linear | github_projects | none
+  provider: none
+
+  # Nome da variável de ambiente que contém a API key do provider
+  # (o valor real fica no .env, nunca aqui)
+  credentials_env: SYNC_API_KEY
+
+  # Nome da variável de ambiente que contém o ID do destino
+  # Ex: ID da página no Notion, ID do board no Trello, ID do arquivo no Drive
+  destination_id_env: SYNC_DESTINATION_ID
+
+  # Quando sincronizar automaticamente
+  auto_sync_on:
+    - session_end    # ao executar *session-end
+    - manual_only    # ou somente quando *sync-status for chamado explicitamente
+
+# --- IDE preferida ---
+ide: vscode   # vscode | cursor | zed | claude-code | gemini-cli
+
+# --- Preferências de desenvolvimento local ---
+# Descomente e ajuste conforme necessário
+# dev_server_port: 3000
+# open_browser_on_start: true

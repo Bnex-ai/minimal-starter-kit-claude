@@ -1,0 +1,74 @@
+# ==============================================================
+# .gitignore — Minimal Starter Kit
+# ==============================================================
+
+# --- Segredos e configurações locais (NUNCA commitar) ---
+.env
+.env.local
+.env.*.local
+local-config.yaml
+secrets/
+keys/
+credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+
+# --- Dependências ---
+node_modules/
+.pnp
+.pnp.js
+vendor/
+
+# --- Build ---
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# --- Cache e temporários ---
+.cache/
+.turbo/
+.parcel-cache/
+*.tsbuildinfo
+.eslintcache
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Testes ---
+coverage/
+.nyc_output/
+
+# --- IDEs e editores ---
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Python (se aplicável) ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# --- Docker (volumes locais) ---
+.docker/data/
+
+# --- Misc ---
+*.tmp
+*.temp
+.aios/logs/
