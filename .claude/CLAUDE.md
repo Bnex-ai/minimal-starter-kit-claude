@@ -19,23 +19,24 @@ Para sobrescrever instruções temporariamente sem editar este arquivo, crie
 
 ---
 
-## Bootstrap (Ritual de Entrada)
+## Bootstrap (Ritual de Entrada) — OBRIGATÓRIO
 
-Ao iniciar uma sessão de trabalho, antes de qualquer ação ou resposta
-substantiva, reconstrua o estado do projeto nesta ordem:
+Leia, NESTA ORDEM, antes de qualquer ação ou resposta substantiva:
 
+0. `.claude/CLAUDE.md` — ESTE arquivo, na íntegra. Não presuma
+   conhecê-lo por já ter operado neste projeto antes: sessões
+   compactadas perdem o conteúdo original. Releia.
 1. `docs/PROJECT_STATUS.md` — fonte única da verdade do estado atual.
-2. `wiki/index.md` + últimas entradas de `wiki/log.md` desde a data
-   registrada no STATUS — conhecimento acumulado recente.
-3. Condicional — leia apenas se o STATUS indicar lacuna ou se for a 1ª
-   sessão: `docs/project-brief.md`, `docs/prd.md`, `docs/architecture.md`.
+2. `wiki/index.md` + entradas de `wiki/log.md` desde a data do STATUS.
+3. Condicional — só se o STATUS indicar lacuna ou for a 1ª sessão:
+   `docs/project-brief.md`, `docs/prd.md`, `docs/architecture.md`.
 
-Primeira resposta deve conter:
-- Resumo de 2-3 linhas do estado atual
-- Último ponto de parada
-- Próximo passo sugerido (aguardando validação)
+A primeira resposta da sessão deve declarar explicitamente:
+"Bootstrap: li CLAUDE.md, STATUS (atualizado em DD/MM) e log."
 
-Skip do bootstrap: perguntas triviais (dúvidas pontuais, "como funciona X",
+Se a sessão for compactada no meio, REFAÇA o bootstrap ao retomar.
+
+Skip: perguntas triviais (dúvidas pontuais, "como funciona X",
 conversas meta sobre o agente) não exigem o ritual — responda direto.
 
 ---
@@ -190,6 +191,117 @@ Já está no `.gitignore`. Criar se não existir.
 ```
 
 **NUNCA execute apenas o passo 1.** Mover sem verificar o histórico git e o .gitignore é falsa segurança. O protocolo é sempre os 5 passos completos.
+
+---
+
+## Fronteiras e Disciplina Operacional
+
+### Alterações diretas em ambientes vivos
+
+`<PREENCHER: ambientes de execução do projeto — ex. VPS, servidor de
+automação, banco de dados gerenciado, plataforma no-code>`
+
+É PERMITIDO alterar diretamente esses ambientes — eles são a
+verdade operacional e não vivem no git.
+
+Condição inegociável: toda alteração direta gera, na MESMA sessão,
+antes de mudar de assunto:
+
+1. entrada em `docs/PROJECT_STATUS.md` (o que mudou, onde, quando)
+2. entrada em `wiki/log.md` e, se gerou conhecimento novo, na
+   página correspondente em `wiki/entities/` ou `wiki/concepts/`
+
+Uma alteração viva sem registro é um GAP. Se o contexto acabar
+antes do registro, o gap fica invisível na próxima sessão e o
+projeto passa a operar sobre informação falsa.
+
+Ao encerrar: confirmar que não há alteração viva sem registro.
+
+### Fronteira de execução — container vs. máquina do usuário
+
+Ambientes distintos. Nunca confundir:
+
+| Ambiente | O que é | Papel |
+|---|---|---|
+| Container do agente | sandbox efêmero na nuvem | rascunho — nunca é referência |
+| Máquina do usuário | pasta local do projeto | FONTE DA VERDADE de backend/infra/docs |
+| GitHub — repo do projeto | `<PREENCHER: público ou privado>` | espelho do que foi APROVADO |
+| Repos escritos por ferramenta externa | ex.: builders no-code que sincronizam sozinhos | espelho automático; NÃO passa pelo rito |
+| `<PREENCHER: ambiente(s) de produção>` | produção | verdade operacional |
+
+**REGRA:** operações que criam, movem ou APAGAM arquivos em lote na
+máquina do usuário — `git init`, `git add`, `git rm`, `mv`, `rm`,
+scripts de reorganização — NÃO são executadas pela ponte remota.
+
+Motivo técnico: a ponte não consegue remover arquivos
+("Operation not permitted"). O git depende de remover arquivos
+temporários (`index.lock`, objetos parciais). Rodar git pela ponte
+deixa o repositório inconsistente e o agente não consegue limpar
+o que sujou.
+
+Procedimento correto:
+
+1. Rascunhar/validar no container do agente
+2. Entregar ao usuário o comando exato, pronto para colar
+3. O usuário executa nativamente (PowerShell / terminal)
+4. O agente confirma o resultado por LEITURA — `ls`, `git diff`,
+   `git log` e **`git --no-optional-locks status`**.
+   NUNCA `git status` puro pela ponte: ele atualiza o índice, cria
+   `.git/index.lock`, e a ponte não consegue remover o lock
+   (`Operation not permitted`) — o repositório fica travado para o
+   próximo comando do usuário. A flag `--no-optional-locks` existe
+   exatamente para consultar status sem tomar lock.
+
+A ponte é para LER, EDITAR arquivo a arquivo e ESCREVER arquivos
+novos. Não é para gerenciar repositório.
+
+Repos escritos por ferramenta externa têm autor próprio. Ao
+inspecionar o histórico, esperar commits que ninguém desta
+conversa aprovou — normal nesses repos, ANOMALIA no repo do projeto.
+
+Arquivo apagável pela ponte que precisa ser removido: mova para
+`_to_delete/` (gitignorado) em vez de tentar `rm` — a ponte não
+remove arquivos. O usuário apaga a pasta manualmente quando quiser.
+
+### Regra anti-deriva — arquivos que existem em mais de um lugar
+
+`<PREENCHER: arquivo que existe no repo E num ambiente de execução,
+ex. script/skill que vive no repositório e também precisa estar
+instalado em produção>`.
+
+Sentido único de propagação: **repo → ambiente. NUNCA o inverso.**
+
+Antes de editar qualquer arquivo desses:
+
+1. Comparar checksum das duas cópias (`sha256sum`)
+2. Se divergirem, PARAR e reportar antes de editar
+
+Depois de propagar:
+
+3. Comparar checksum de novo e registrar o valor no STATUS
+
+Editar a cópia do ambiente diretamente cria uma versão fantasma
+que ninguém sabe que existe.
+
+### Verificação de existência — nunca concluir por ausência
+
+Ao verificar se algo existe (repo, workflow, tabela, projeto,
+arquivo), declarar SEMPRE o escopo consultado e o que ficou fora
+do alcance.
+
+```
+Errado:  "só existe um repositório"
+Certo:   "a API pública mostra 1 repo; repos privados não aparecem
+          sem autenticação — confirme na interface logada"
+```
+
+Vale para: GitHub sem token, MCP autenticado numa conta só,
+listagens filtradas por permissão, buscas que dependem de índice.
+
+Exemplo ilustrativo: uma sessão consultou a API pública do GitHub e
+concluiu que havia 1 repositório. Havia 3 — dois privados, que a
+API sem autenticação não lista. A pergunta original era justamente
+sobre evitar duplicação.
 
 ---
 

@@ -1,0 +1,27 @@
+# ==============================================================
+# .gitattributes — normalização de finais de linha
+# ==============================================================
+# O repositório guarda TUDO com LF. Sem isto, o Git no Windows
+# grava CRLF e scripts que rodam em ambiente Linux quebram no
+# destino com o erro "bad interpreter: /bin/bash^M" — difícil de
+# diagnosticar, porque o arquivo parece correto em qualquer editor.
+
+* text=auto eol=lf
+
+# Scripts que rodam em ambiente Linux (servidor, container, CI).
+# NUNCA podem receber CRLF.
+*.sh    text eol=lf
+
+# Documentação e dados — LF por consistência.
+*.md    text eol=lf
+*.sql   text eol=lf
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+
+# Binários: o Git não deve tentar converter nada.
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary

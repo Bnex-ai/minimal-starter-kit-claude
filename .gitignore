@@ -72,3 +72,10 @@ venv/
 *.tmp
 *.temp
 .aios/logs/
+
+# --- Artefatos operacionais que não vão pro git ---
+# Destino de arquivos que a ponte remota não consegue apagar
+# (ela não remove arquivo — ver .claude/CLAUDE.md, "Fronteira de
+# execução"). Mover para cá em vez de tentar `rm`; o usuário apaga
+# a pasta manualmente quando quiser.
+_to_delete/
